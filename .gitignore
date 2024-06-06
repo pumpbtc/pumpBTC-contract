@@ -1,0 +1,22 @@
+# for solidity contracts
+.deps
+.deploys
+.openzeppelin
+artifacts
+cache
+contracts/artifacts
+coverage.json
+coverage/
+
+# for mac & vscode
+.ds_store
+.prettierrc.json
+
+# for javascript/typescript
+.env
+node_modules
+typechain-types
+
+# others
+outputabi.py
+
