@@ -25,7 +25,7 @@ describe("pumpBTC Unit Test", function () {
     ])) as unknown as PumpStaking;
     const pumpStakingAddress = await pumpStaking.getAddress();
 
-    await pumpBTC.transferOwnership(pumpStakingAddress);
+    await pumpBTC.setMinter(pumpStakingAddress, true);
     await pumpStaking.setStakeAssetCap(amount18 * 3n);
     await pumpStaking.setOperator(operator.address);
 
@@ -88,9 +88,13 @@ describe("pumpBTC Unit Test", function () {
 
   it("should adjust the amount correctly", async function () {
     const { pumpStaking } = await loadFixture(deployContracts);
-    const amount = parseUnits("1", 18);
-    expect(await pumpStaking._adjustAmount(amount)).to.equal(
+    const amount8 = parseUnits("1", 8);
+    const amount18 = parseUnits("1", 18);
+    expect(await pumpStaking._adjustAmount(amount8)).to.equal(
       parseUnits("1", 8)
+    );
+    expect(await pumpStaking._adjustAmount(amount18)).to.equal(
+      parseUnits("1", 18)
     );
   });
 
@@ -201,8 +205,8 @@ describe("pumpBTC Unit Test", function () {
 
     const ownerBalanceBefore = await wbtc.balanceOf(owner);
 
-    await pumpStaking.connect(user2).stake(parseUnits("0.2", 18));
-    await pumpStaking.connect(user2).unstakeInstant(parseUnits("0.2", 18));
+    await pumpStaking.connect(user2).stake(parseUnits("0.2", 8));
+    await pumpStaking.connect(user2).unstakeInstant(parseUnits("0.2", 8));
 
     const collectFeeBefore = await pumpStaking.collectedFee();
 
@@ -234,7 +238,7 @@ describe("pumpBTC Unit Test", function () {
     const { pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    const stakeAmount = parseUnits("1", 18);
+    const stakeAmount = parseUnits("1", 8);
     await pumpStaking.connect(user1).stake(stakeAmount);
 
     const operatorBalanceBefore = await wbtc.balanceOf(operator.address);
@@ -254,7 +258,7 @@ describe("pumpBTC Unit Test", function () {
     const { pumpStaking } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    const stakeAmount = parseUnits("1", 18);
+    const stakeAmount = parseUnits("1", 8);
     await pumpStaking.connect(user1).stake(stakeAmount);
 
     await expect(pumpStaking.connect(user2).withdraw()).to.be.revertedWith(
@@ -267,7 +271,7 @@ describe("pumpBTC Unit Test", function () {
     const accounts = await ethers.getSigners();
     const operator = accounts[1];
 
-    const depositAmount = parseUnits("10", 18);
+    const depositAmount = parseUnits("10", 8);
     const operatorBalanceBefore = await wbtc.balanceOf(operator.address);
 
     await expect(pumpStaking.connect(operator).deposit(depositAmount))
@@ -285,7 +289,7 @@ describe("pumpBTC Unit Test", function () {
     const { pumpStaking } = await loadFixture(deployContracts);
     const accounts = await ethers.getSigners();
     const user1 = accounts[2];
-    const depositAmount = parseUnits("10", 18);
+    const depositAmount = parseUnits("10", 8);
     await expect(
       pumpStaking.connect(user1).deposit(depositAmount)
     ).to.be.revertedWith("PumpBTC: caller is not the operator");
@@ -295,12 +299,12 @@ describe("pumpBTC Unit Test", function () {
     const { pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    const stakeAmount = parseUnits("1", 18);
+    const stakeAmount = parseUnits("1", 8);
     await pumpStaking.connect(user1).stake(stakeAmount);
 
     const operatorBalanceBefore = await wbtc.balanceOf(operator.address);
 
-    const depositAmount = parseUnits("0.5", 18);
+    const depositAmount = parseUnits("0.5", 8);
     await expect(
       pumpStaking.connect(operator).withdrawAndDeposit(depositAmount)
     )
@@ -320,10 +324,10 @@ describe("pumpBTC Unit Test", function () {
     const { pumpStaking } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    const stakeAmount = parseUnits("1", 18);
+    const stakeAmount = parseUnits("1", 8);
     await pumpStaking.connect(user1).stake(stakeAmount);
 
-    const depositAmount = parseUnits("0.5", 18);
+    const depositAmount = parseUnits("0.5", 8);
     await expect(
       pumpStaking.connect(user2).withdrawAndDeposit(depositAmount)
     ).to.be.revertedWith("PumpBTC: caller is not the operator");
@@ -335,7 +339,7 @@ describe("pumpBTC Unit Test", function () {
     const accounts = await ethers.getSigners();
     const user1 = accounts[2];
 
-    const stakeAmount = parseUnits("1", 18);
+    const stakeAmount = parseUnits("1", 8);
 
     const userBalanceBefore = await wbtc.balanceOf(user1.address);
 
@@ -345,9 +349,7 @@ describe("pumpBTC Unit Test", function () {
 
     const userBalanceAfter = await wbtc.balanceOf(user1.address);
 
-    expect(userBalanceBefore - userBalanceAfter).to.equal(
-      await pumpStaking._adjustAmount(stakeAmount)
-    );
+    expect(userBalanceBefore - userBalanceAfter).to.equal(stakeAmount);
     expect(await pumpStaking.totalStakingAmount()).to.equal(stakeAmount);
     expect(await pumpStaking.pendingStakeAmount()).to.equal(stakeAmount);
   });
@@ -358,7 +360,7 @@ describe("pumpBTC Unit Test", function () {
 
     await pumpStaking.connect(owner).pause();
 
-    const stakeAmount = parseUnits("1", 18);
+    const stakeAmount = parseUnits("1", 8);
     await expect(
       pumpStaking.connect(user1).stake(stakeAmount)
     ).to.be.revertedWithCustomError(pumpStaking, "EnforcedPause");
@@ -393,17 +395,11 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
     const block = await ethers.provider.getBlock("latest");
     if (block === null) {
@@ -413,19 +409,19 @@ describe("pumpBTC Unit Test", function () {
     const timestamp = block.timestamp;
     const slot = await pumpStaking._getDateSlot(timestamp);
 
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.5", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.5", 8));
 
     const userPendingUnstakeAmount = await pumpStaking.pendingUnstakeAmount(
       user1.address,
       slot
     );
 
-    expect(userPendingUnstakeAmount).to.equal(parseUnits("0.5", 18));
+    expect(userPendingUnstakeAmount).to.equal(parseUnits("0.5", 8));
     expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
     expect(await pumpStaking.totalRequestedAmount()).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
   });
 
@@ -433,28 +429,25 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
     await expect(
-      pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 18))
+      pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 8))
     );
 
     await time.increase(86400 * 7);
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 8));
+
+    await time.increase(86400 * 7);
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.2", 8));
 
     await time.increase(86400 * 3);
     await expect(
-      pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 18))
+      pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 8))
     ).to.be.revertedWith("PumpBTC: claim the previous unstake first");
   });
 
@@ -462,20 +455,14 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
     await expect(
-      pumpStaking.connect(user1).unstakeRequest(parseUnits("0", 18))
+      pumpStaking.connect(user1).unstakeRequest(parseUnits("0", 8))
     ).to.be.revertedWith("PumpBTC: amount should be greater than 0");
   });
 
@@ -483,21 +470,15 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
-    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 18));
+    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 8));
 
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.5", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.5", 8));
     const block = await ethers.provider.getBlock("latest");
     if (block === null) {
       throw new Error("Failed to fetch the latest block");
@@ -507,7 +488,7 @@ describe("pumpBTC Unit Test", function () {
     await time.increase(86400 * 9);
     expect(await pumpStaking.connect(user1).claimSlot(slot))
       .to.emit(pumpStaking, "ClaimSlot")
-      .withArgs(user1.address, parseUnits("0.5", 18), slot);
+      .withArgs(user1.address, parseUnits("0.5", 8), slot);
 
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99.5", 8));
     expect(await pumpStaking.totalClaimableAmount()).to.equal(0);
@@ -538,19 +519,13 @@ describe("pumpBTC Unit Test", function () {
     const accounts = await ethers.getSigners();
     const user1 = accounts[2];
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.5", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.5", 8));
     const block = await ethers.provider.getBlock("latest");
     if (block === null) {
       throw new Error("Failed to fetch the latest block");
@@ -568,24 +543,18 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.3", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.3", 8));
 
-    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 18));
+    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 8));
 
     expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("0.7", 18)
+      parseUnits("0.7", 8)
     );
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
 
@@ -594,7 +563,7 @@ describe("pumpBTC Unit Test", function () {
 
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99.3", 8));
     expect(await pumpStaking.totalClaimableAmount()).to.equal(
-      parseUnits("0.2", 18)
+      parseUnits("0.2", 8)
     );
     expect(await pumpStaking.totalRequestedAmount()).to.equal(0);
   });
@@ -613,24 +582,18 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.3", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.3", 8));
 
-    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 18));
+    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 8));
 
     expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("0.7", 18)
+      parseUnits("0.7", 8)
     );
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
 
@@ -643,36 +606,28 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
-    await pumpStaking.connect(user1).unstakeInstant(parseUnits("0.5", 18));
+    await pumpStaking.connect(user1).unstakeInstant(parseUnits("0.5", 8));
 
     const fee = await pumpStaking.collectedFee();
-    const adjustedAmountAfterFee = await pumpStaking._adjustAmount(
-      parseUnits("0.5", 18) - fee
-    );
+    const amountAfterFee = parseUnits("0.5", 8) - fee;
 
     expect(await wbtc.balanceOf(user1.address)).to.equal(
-      parseUnits("99", 8) + adjustedAmountAfterFee
+      parseUnits("99", 8) + amountAfterFee
     );
     expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
     expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
     expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
     expect(await pumpStaking.collectedFee()).to.equal(fee);
   });
@@ -681,20 +636,20 @@ describe("pumpBTC Unit Test", function () {
     const { pumpBTC, pumpStaking, wbtc } = await loadFixture(deployContracts);
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
-    await pumpStaking.connect(user1).stake(parseUnits("0.5", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("0.5", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99.5", 8));
     expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
     expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
     expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("0.5", 18)
+      parseUnits("0.5", 8)
     );
 
     await expect(
-      pumpStaking.connect(user1).unstakeInstant(parseUnits("1", 18))
+      pumpStaking.connect(user1).unstakeInstant(parseUnits("1", 8))
     ).to.be.revertedWith("PumpBTC: insufficient pending stake amount");
   });
 
@@ -714,63 +669,47 @@ describe("pumpBTC Unit Test", function () {
     const [owner, operator, user1, user2] = await ethers.getSigners();
 
     // Day 1: User1 stakes 1 WBTC
-    await pumpStaking.connect(user1).stake(parseUnits("1", 18));
+    await pumpStaking.connect(user1).stake(parseUnits("1", 8));
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
-    expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("1", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("1", 18)
-    );
+    expect(await pumpBTC.balanceOf(user1.address)).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("1", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("1", 8));
 
     await pumpStaking.connect(operator).withdraw();
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("0", 18)
-    );
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("0", 8));
 
-    // Day 2: User2 stakes 2 BTCB
+    // Day 2: User2 stakes 2 WBTC
     await time.increase(86400);
-    await pumpStaking.connect(user2).stake(parseUnits("2", 18));
+    await pumpStaking.connect(user2).stake(parseUnits("2", 8));
     expect(await wbtc.balanceOf(user2.address)).to.equal(parseUnits("98", 8));
-    expect(await pumpBTC.balanceOf(user2.address)).to.equal(
-      parseUnits("2", 18)
-    );
-    expect(await pumpStaking.totalStakingAmount()).to.equal(
-      parseUnits("3", 18)
-    );
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("2", 18)
-    );
+    expect(await pumpBTC.balanceOf(user2.address)).to.equal(parseUnits("2", 8));
+    expect(await pumpStaking.totalStakingAmount()).to.equal(parseUnits("3", 8));
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("2", 8));
 
     await pumpStaking.connect(operator).withdraw();
-    expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("0", 18)
-    );
+    expect(await pumpStaking.pendingStakeAmount()).to.equal(parseUnits("0", 8));
 
-    // Day 5: User1 unstake 0.3 BTCB
+    // Day 5: User1 unstake 0.3 WBTC
     await time.increase(86400 * 3);
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.3", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.3", 8));
 
     // Day 12: User1 can't unstake yet, and request again
     await time.increase(86400 * 7);
     await expect(pumpStaking.connect(user1).claimAll()).to.be.revertedWith(
       "PumpBTC: haven't reached the claimable time"
     );
-    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 18));
+    await pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 8));
 
     // Day 15: User1 can't unstake again before claim
     await time.increase(86400 * 3);
-    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 18));
+    await pumpStaking.connect(operator).deposit(parseUnits("0.5", 8));
     await expect(
-      pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 18))
+      pumpStaking.connect(user1).unstakeRequest(parseUnits("0.1", 8))
     ).to.be.revertedWith("PumpBTC: claim the previous unstake first");
 
     // Day 15: User1 claim the unstake
     expect(await pumpBTC.balanceOf(user1.address)).to.equal(
-      parseUnits("0.6", 18)
+      parseUnits("0.6", 8)
     );
     expect(await wbtc.balanceOf(user1.address)).to.equal(parseUnits("99", 8));
     await pumpStaking.connect(user1).claimAll();
@@ -779,18 +718,18 @@ describe("pumpBTC Unit Test", function () {
     // Day 16: User2 unstake instantly
     await time.increase(86400);
     await expect(
-      pumpStaking.connect(user2).unstakeInstant(parseUnits("0.2", 18))
+      pumpStaking.connect(user2).unstakeInstant(parseUnits("0.2", 8))
     ).to.be.revertedWith("PumpBTC: insufficient pending stake amount");
-    await pumpStaking.connect(user1).stake(parseUnits("0.5", 18));
-    await pumpStaking.connect(user2).unstakeInstant(parseUnits("0.2", 18)); // 0.2 * (1-3%) = 0.194
+    await pumpStaking.connect(user1).stake(parseUnits("0.5", 8));
+    await pumpStaking.connect(user2).unstakeInstant(parseUnits("0.2", 8)); // 0.2 * (1-3%) = 0.194
     expect(await pumpBTC.balanceOf(user2.address)).to.equal(
-      parseUnits("1.8", 18)
+      parseUnits("1.8", 8)
     );
     expect(await wbtc.balanceOf(user2.address)).to.equal(
       parseUnits("98.194", 8)
     );
     expect(await pumpStaking.pendingStakeAmount()).to.equal(
-      parseUnits("0.3", 18)
+      parseUnits("0.3", 8)
     );
 
     // Day 16: Collect fees
