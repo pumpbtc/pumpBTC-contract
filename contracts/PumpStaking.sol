@@ -20,7 +20,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     uint8 public assetDecimal;
 
     // all the following variables are in the same decimal as pumpBTC (18 decimal)
-    uint256 public totalStakingAmount;      // Current amount of staked amount
+    int256 public totalStakingAmount;      // Current amount of staked amount
     uint256 public totalStakingCap;         // Upper limit of staking amount
     uint256 public totalRequestedAmount;    // Total requested balance
     uint256 public totalClaimableAmount;    // Total claimable balance
@@ -103,7 +103,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     }
 
     function setStakeAssetCap(uint256 newTotalStakingCap) public onlyOwner {
-        require(newTotalStakingCap >= totalStakingAmount, "PumpBTC: staking cap too small");
+        require(int256(newTotalStakingCap) >= totalStakingAmount, "PumpBTC: staking cap too small");
 
         emit SetStakeAssetCap(totalStakingCap, newTotalStakingCap);
         totalStakingCap = newTotalStakingCap;
@@ -193,11 +193,11 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     function stake(uint256 amount) public whenNotPaused {
         require(amount > 0, "PumpBTC: amount should be greater than 0");
         require(
-            totalStakingAmount + amount <= totalStakingCap, 
+            totalStakingAmount + int256(amount) <= int256(totalStakingCap), 
             "PumpBTC: exceed staking cap"
         );
 
-        totalStakingAmount += amount;
+        totalStakingAmount += int256(amount);
         pendingStakeAmount += amount;
 
         emit Stake(_msgSender(), amount);
@@ -219,7 +219,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
 
         pendingUnstakeTime[user][slot] = block.timestamp;
         pendingUnstakeAmount[user][slot] += amount;
-        totalStakingAmount -= amount;
+        totalStakingAmount -= int256(amount);
         totalRequestedAmount += amount;
 
         emit UnstakeRequest(user, amount, slot);
@@ -285,7 +285,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
         require(amount > 0, "PumpBTC: amount should be greater than 0");
         require(amount <= pendingStakeAmount, "PumpBTC: insufficient pending stake amount");
 
-        totalStakingAmount -= amount;
+        totalStakingAmount -= int256(amount);
         pendingStakeAmount -= amount;
         collectedFee += fee;
 
