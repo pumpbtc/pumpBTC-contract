@@ -2,14 +2,14 @@ import "dotenv/config"
 import { deployContract, deployUpgradeableContract } from "./utils"
 
 async function main() {
+  // const wbtc = await deployContract("MockWBTC")
   const pumpBTC = await deployContract("PumpToken")
-  const wbtc = await deployContract("MockWBTC")
   await deployUpgradeableContract(
-    "PumpStaking", [await pumpBTC.getAddress(), await wbtc.getAddress()]
+    "PumpStaking", [await pumpBTC.getAddress(), process.env.ADDRESS_WBTC!]
   )
 
   // After run deploy script, need manual setup:
-  //   1 - transfer PumpToken ownership to PumpStaking
+  //   1 - Set PumpStaking as minter of PumpToken
   //   2 - PumpStaking setStakeAssetCap
   //   3 - PumpStaking setOperator
 }  

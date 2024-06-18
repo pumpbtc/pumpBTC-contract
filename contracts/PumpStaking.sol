@@ -30,6 +30,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     address public operator;                // Operator address, for deposit and withdraw
     uint256 public normalUnstakeFee;        // Fee for normal unstake
     uint256 public instantUnstakeFee;       // Fee for instant unstake
+    bool public onlyAllowStake;             // Only allow stake at first
 
     // User => DateSlot => Unstake request time
     mapping(address => mapping(uint8 => uint256)) public pendingUnstakeTime;
@@ -43,6 +44,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     event SetNormalUnstakeFee(uint256 oldNormalUnstakeFee, uint256 newNormalUnstakeFee);
     event SetInstantUnstakeFee(uint256 oldInstantUnstakeFee, uint256 newInstantUnstakeFee);
     event SetOperator(address oldOperator, address newOperator);
+    event SetOnlyAllowStake(bool onlyAllowStake);
     event FeeCollected(uint256 amount);
 
     event Stake(address indexed user, uint256 amount);
@@ -61,6 +63,11 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
         _;
     }
 
+    modifier allowUnstakeOrClaim {
+        require(!onlyAllowStake, "PumpBTC: only allow stake at first");
+        _;
+    }
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -76,6 +83,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
 
         normalUnstakeFee = 0;     // Means 0%
         instantUnstakeFee = 300;    // Means 3%
+        onlyAllowStake = true;
 
         __Ownable_init(_msgSender());
         __Ownable2Step_init();
@@ -84,8 +92,12 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
 
 
     // ========================== Utils functions ==========================
+    function _getPeriod() public virtual pure returns (uint256) {
+        return 1 days;
+    }
+
     function _getDateSlot(uint256 timestamp) public pure returns (uint8) {
-        return uint8((timestamp + 8 hours) / 1 days % MAX_DATE_SLOT);   // UTC+8 date slot
+        return uint8((timestamp + 8 hours) / _getPeriod() % MAX_DATE_SLOT);   // UTC+8 date slot
     }
 
     function _adjustAmount(uint256 amount) public view returns (uint256) {
@@ -126,6 +138,11 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     function setOperator(address newOperator) public onlyOwner {
         emit SetOperator(operator, newOperator);
         operator = newOperator;
+    }
+
+    function setOnlyAllowStake(bool _onlyAllowStake) public onlyOwner {
+        emit SetOnlyAllowStake(_onlyAllowStake);
+        onlyAllowStake = _onlyAllowStake;
     }
 
     function collectFee() public onlyOwner {
@@ -207,13 +224,13 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     }
 
 
-    function unstakeRequest(uint256 amount) public whenNotPaused {
+    function unstakeRequest(uint256 amount) public whenNotPaused allowUnstakeOrClaim {
         address user = _msgSender();
         uint8 slot = _getDateSlot(block.timestamp);
 
         require(amount > 0, "PumpBTC: amount should be greater than 0");
         require(
-            block.timestamp - pendingUnstakeTime[user][slot] < 1 days
+            block.timestamp - pendingUnstakeTime[user][slot] < _getPeriod()
             || pendingUnstakeAmount[user][slot] == 0, "PumpBTC: claim the previous unstake first"
         );
 
@@ -227,14 +244,14 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
         pumpBTC.burn(user, amount);
     }
 
-    function claimSlot(uint8 slot) public whenNotPaused {
+    function claimSlot(uint8 slot) public whenNotPaused allowUnstakeOrClaim {
         address user = _msgSender();
         uint256 amount = pendingUnstakeAmount[user][slot];
         uint256 fee = amount * normalUnstakeFee / 10000;
 
         require(amount > 0, "PumpBTC: no pending unstake");
         require(
-            block.timestamp - pendingUnstakeTime[user][slot] >= (MAX_DATE_SLOT - 1) * 1 days,
+            block.timestamp - pendingUnstakeTime[user][slot] >= (MAX_DATE_SLOT - 1) * _getPeriod(),
             "PumpBTC: haven't reached the claimable time"
         );
 
@@ -248,14 +265,14 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
         asset.safeTransfer(user, _adjustAmount(amount - fee));
     }
 
-    function claimAll() public whenNotPaused {
+    function claimAll() public whenNotPaused allowUnstakeOrClaim {
         address user = _msgSender();
         uint256 totalAmount = 0;
         uint256 pendingCount = 0;
 
         for(uint8 slot = 0; slot < MAX_DATE_SLOT; slot++) {
             uint256 amount = pendingUnstakeAmount[user][slot];
-            bool readyToClaim = block.timestamp - pendingUnstakeTime[user][slot] >= (MAX_DATE_SLOT - 1) * 1 days;
+            bool readyToClaim = block.timestamp - pendingUnstakeTime[user][slot] >= (MAX_DATE_SLOT - 1) * _getPeriod();
             if (amount > 0) {
                 pendingCount += 1;
                 if (readyToClaim) {
@@ -278,7 +295,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
         asset.safeTransfer(user, _adjustAmount(totalAmount - fee));
     }
 
-    function unstakeInstant(uint256 amount) public whenNotPaused {
+    function unstakeInstant(uint256 amount) public whenNotPaused allowUnstakeOrClaim {
         address user = _msgSender();
         uint256 fee = amount * instantUnstakeFee / 10000;
 

@@ -28,6 +28,7 @@ describe("pumpBTC Unit Test", function () {
     await pumpBTC.setMinter(pumpStakingAddress, true);
     await pumpStaking.setStakeAssetCap(amount18 * 3n);
     await pumpStaking.setOperator(operator.address);
+    await pumpStaking.setOnlyAllowStake(false);
 
     // Distribute tokens, approve for staking
     await wbtc.transfer(operator.address, amount8);
@@ -37,6 +38,7 @@ describe("pumpBTC Unit Test", function () {
     await wbtc.connect(user1).approve(pumpStakingAddress, amount8);
     await wbtc.connect(user2).approve(pumpStakingAddress, amount8);
     await wbtc.approve(pumpStakingAddress, amount8);
+
 
     return { pumpBTC, pumpStaking, wbtc };
   }
