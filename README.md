@@ -65,13 +65,13 @@ The assets flow is shown in the figure below:
 
 Upon staking Wrapped BTC, our contract mints pumpBTC for the user.
 
-- **pumpBTC**: An ERC20 token with 18 decimals.
+- **pumpBTC**: An ERC20 token with 8 decimals.
 - **WBTC**: The mainnet address is [here](https://etherscan.io/token/0x2260fac5e5542a773aa44fbcfedf7c193bc2c599). A test version with 8 decimals will be deployed on testnet.
 - **pumpStaking**: The main staking contract containing several functions and events.
 
 ## Main Contract Functions
 
-Note: All quantity-related variables are in pumpBTC decimals (18 decimals).
+Note: All quantity-related variables are in pumpBTC decimals (8 decimals).
 
 ### View Functions
 
@@ -80,7 +80,7 @@ Note: All quantity-related variables are in pumpBTC decimals (18 decimals).
 - `totalRequestedAmount`: Total amount of BTC requested for unstake, not yet claimed.
 - `totalClaimableAmount`: Total amount of BTC available for claiming.
 - `pendingStakeAmount`: Amount staked today minus amount instantly unstaked today (`X - Z`).
-- `collectedFee`: Collected fees (in WBTC, 18 decimals).
+- `collectedFee`: Collected fees (in WBTC, 8 decimals).
 - `operator`: Address able to withdraw or deposit BTC to the contract.
 - `instantUnstakeFee`: Fee rate for instant unstake, default is 300 (3%).
 - `pendingUnstakeTime`: Timestamp for a user's unstake request in a specific date slot.
@@ -98,7 +98,7 @@ Note: All quantity-related variables are in pumpBTC decimals (18 decimals).
 
 ### User Write Functions
 
-- `stake`: Stake a specified amount of WBTC (18 decimals).
+- `stake`: Stake a specified amount of WBTC (8 decimals).
 - `unstakeRequest`: Request to unstake a specified amount of WBTC.
 - `claimSlot`: Claim unstaked WBTC for a specific slot after the 10-day period.
 - `claimAll`: Claim all unstaked WBTC after the 10-day period.
