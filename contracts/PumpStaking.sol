@@ -19,7 +19,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     IERC20 public asset;
     uint8 public assetDecimal;
 
-    // all the following variables are in the same decimal as pumpBTC (18 decimal)
+    // all the following variables are in the same decimal as pumpBTC (8 decimal)
     int256 public totalStakingAmount;      // Current amount of staked amount
     uint256 public totalStakingCap;         // Upper limit of staking amount
     uint256 public totalRequestedAmount;    // Total requested balance
