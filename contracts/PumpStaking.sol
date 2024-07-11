@@ -4,11 +4,13 @@ pragma solidity ^0.8.20;
 import "./PumpToken.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
 using SafeERC20 for IERC20;
+using SafeCast for uint256;
 
 contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
 
@@ -115,7 +117,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     }
 
     function setStakeAssetCap(uint256 newTotalStakingCap) public onlyOwner {
-        require(int256(newTotalStakingCap) >= totalStakingAmount, "PumpBTC: staking cap too small");
+        require(newTotalStakingCap.toInt256() >= totalStakingAmount, "PumpBTC: staking cap too small");
 
         emit SetStakeAssetCap(totalStakingCap, newTotalStakingCap);
         totalStakingCap = newTotalStakingCap;
@@ -210,11 +212,11 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
     function stake(uint256 amount) public whenNotPaused {
         require(amount > 0, "PumpBTC: amount should be greater than 0");
         require(
-            totalStakingAmount + int256(amount) <= int256(totalStakingCap), 
+            totalStakingAmount + amount.toInt256() <= totalStakingCap.toInt256(), 
             "PumpBTC: exceed staking cap"
         );
 
-        totalStakingAmount += int256(amount);
+        totalStakingAmount += amount.toInt256();
         pendingStakeAmount += amount;
 
         emit Stake(_msgSender(), amount);
@@ -236,7 +238,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
 
         pendingUnstakeTime[user][slot] = block.timestamp;
         pendingUnstakeAmount[user][slot] += amount;
-        totalStakingAmount -= int256(amount);
+        totalStakingAmount -= amount.toInt256();
         totalRequestedAmount += amount;
 
         emit UnstakeRequest(user, amount, slot);
@@ -302,7 +304,7 @@ contract PumpStaking is Ownable2StepUpgradeable, PausableUpgradeable {
         require(amount > 0, "PumpBTC: amount should be greater than 0");
         require(amount <= pendingStakeAmount, "PumpBTC: insufficient pending stake amount");
 
-        totalStakingAmount -= int256(amount);
+        totalStakingAmount -= amount.toInt256();
         pendingStakeAmount -= amount;
         collectedFee += fee;
 

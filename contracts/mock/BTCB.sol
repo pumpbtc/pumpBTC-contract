@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MockBTCB is ERC20, Ownable {
-    constructor() ERC20("Binance BTC", "BTCB") Ownable(_msgSender()) {
-        _mint(msg.sender, 1000000 * 10 ** decimals());
+    constructor() ERC20("Mock Binance BTC", "mBTCB") Ownable(_msgSender()) {
+        _mint(msg.sender, 21000000 * 10 ** decimals());
     }
 
     function mint(address to, uint256 amount) public onlyOwner {
