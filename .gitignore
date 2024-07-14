@@ -3,7 +3,9 @@
 .deploys
 .openzeppelin
 artifacts
+artifacts-zk
 cache
+cache-zk
 contracts/artifacts
 coverage.json
 coverage/

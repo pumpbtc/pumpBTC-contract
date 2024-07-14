@@ -28,5 +28,19 @@
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "@layerzerolabs/lz-definitions": "^2.3.29",
+    "@layerzerolabs/lz-evm-oapp-v2": "^2.3.29",
+    "@layerzerolabs/lz-evm-protocol-v2": "^2.3.29",
+    "@layerzerolabs/lz-v2-utilities": "^2.3.29",
+    "@matterlabs/hardhat-zksync": "^1.1.0",
+    "@matterlabs/hardhat-zksync-deploy": "^1.5.0",
+    "@matterlabs/hardhat-zksync-ethers": "^1.1.0",
+    "@matterlabs/hardhat-zksync-node": "^1.1.0",
+    "@matterlabs/hardhat-zksync-solc": "^1.2.1",
+    "@matterlabs/hardhat-zksync-verify": "^1.5.0",
+    "zksync-ethers": "^6.10.0",
+    "zksync-web3": "^0.17.1"
   }
 }

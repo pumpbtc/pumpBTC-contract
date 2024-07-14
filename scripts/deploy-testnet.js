@@ -73,9 +73,9 @@ async function main() {
   //   2 - PumpStaking setStakeAssetCap
   //   3 - PumpStaking setOperator
 
-  // const pumpBTCContract = await ethers.getContractAt("MockPumpToken", pumpBTCaddr, deployer);
-  // const tx1 = await pumpBTCContract.setMinter(PumpStakingaddr, true);
-  // await tx1.wait(3)
+  const pumpBTCContract = await ethers.getContractAt("MockPumpToken", pumpBTCaddr, deployer);
+  const tx1 = await pumpBTCContract.setMinter(PumpStakingaddr, true);
+  await tx1.wait(3)
 
    const PumpStakingContract = await ethers.getContractAt("PumpStakingTest", PumpStakingaddr, deployer);
    const tx2 = await PumpStakingContract.setStakeAssetCap(2100000000000000);
