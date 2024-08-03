@@ -5,7 +5,8 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Using deployer account:", deployer.address);
 
-  const oftAddress = "0x8E26CCC5d3DD2ccc348c53b732312a3AC7e0A1EF"; // OFT contract address
+  const oftAddress = "0xF469fBD2abcd6B9de8E169d128226C0Fc90a012e"; // OFT contract address
+
   const eid = EndpointId.ETHEREUM_V2_MAINNET;
   const peerAddress = "0xD57aAA5C8116cf0F83F7DA5FDCDF90fdde58ea35";
 

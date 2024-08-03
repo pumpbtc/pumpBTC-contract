@@ -4,7 +4,6 @@ import "@nomicfoundation/hardhat-verify";
 import "@openzeppelin/hardhat-upgrades";
 import "dotenv/config";
 import "@matterlabs/hardhat-zksync";
-import { EndpointId } from '@layerzerolabs/lz-definitions'
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -20,35 +19,36 @@ const config: HardhatUserConfig = {
   },
   networks: {
     eth: {
-      eid: EndpointId.ETHEREUM_V2_MAINNET,
       url: process.env.RPC_ETH_MAIN,
       accounts: [
         process.env.PRIVATE_KEY_ADMIN!,
       ]
     },
     sepolia: {
-      eid: EndpointId.SEPOLIA_V2_TESTNET,
       url: process.env.RPC_ETH_SEPOLIA,
       accounts: [
         process.env.PRIVATE_KEY_ADMIN!,
       ]
     },
     bsc: {
-      eid: EndpointId.BSC_V2_MAINNET,
       url: process.env.RPC_BSC,
       accounts: [
         process.env.PRIVATE_KEY_ADMIN!,
       ]
     },
     mantle: {
-      eid: EndpointId.MANTLE_V2_MAINNET,
       url: process.env.RPC_MANTLE,
       accounts: [
         process.env.PRIVATE_KEY_ADMIN!,
       ]
     },
+    arbitrum: {
+      url: process.env.PRC_ARB,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },
     zklink: {
-      eid: EndpointId.ZKLINK_V2_MAINNET,
       url: process.env.RPC_ZKLINK,
       ethNetwork: 'eth',
       zksync: true,
@@ -56,14 +56,29 @@ const config: HardhatUserConfig = {
       accounts: [
         process.env.PRIVATE_KEY_ADMIN!,
       ]
-  },
+    },
+    bera_testnet: {
+      url: process.env.RPC_BERA,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },
+    move_test: {
+      url: process.env.RPC_MOVE_TEST,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },
+
 },
   etherscan: {
     apiKey: {
       mainnet: process.env.API_ETHERSCAN_ETH!,
       sepolia: process.env.API_ETHERSCAN_ETH!,
       bsc: process.env.API_ETHERSCAN_BSC!,
+      arbitrum: process.env.API_ETHERSCAN_ARB!,
       mantle: "mantle", // apiKey is not required, just set a placeholder
+      bera_testnet: "bera_testnet", // apiKey is not required, just set a placeholder
     },
     customChains: [
       {
@@ -72,6 +87,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.routescan.io/v2/network/mainnet/evm/5000/etherscan",
           browserURL: "https://mantlescan.info"
+        }
+      },
+      {
+        network: "bera_testnet",
+        chainId: 80084,
+        urls: {
+          apiURL: "https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
+          browserURL: "https://bartio.beratrail.io"
         }
       }
     ]    

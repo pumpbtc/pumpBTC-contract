@@ -9,36 +9,54 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
 
-  // deploy mockBTCB and mockPumpToken
-  const btcb = await deployContract("MockWBTC")
-  const pumpBTC = await deployContract("MockPumpToken")
+  // update maxPriorityFeePerGas for movement testnet
+  const feeData = await ethers.provider.getFeeData();
+  console.log(feeData)
+  const overrides = {
+    maxFeePerGas: feeData.maxFeePerGas,
+    maxPriorityFeePerGas: feeData.maxFeePerGas,
+  };
+  console.log(overrides)
 
-  console.log("MockBTCB deployed to:", btcb.target);
+
+  
+  // deploy mockBTC and mockPumpToken
+  const btc = await deployContract("DevBTC",[overrides])
+  const pumpBTC = await deployContract("DevPumpToken",[overrides])
+
+  console.log("MockBTC deployed to:", btc.target);
   console.log("PumpToken deployed to:", pumpBTC.target);
 
-  await btcb.waitForDeployment();
+  await btc.waitForDeployment();
   await pumpBTC.waitForDeployment();
 
 
   const pumpBTCaddr = await pumpBTC.getAddress()
-  const btcbaddr = await btcb.getAddress()
+  const btcaddr = await btc.getAddress()
+
 
 
   // deploy pumpStaking
   const PumpStaking =await deployUpgradeableContract(
-    "PumpStakingTest", [pumpBTCaddr, btcbaddr]
+    "PumpStakingTest", [pumpBTCaddr, btcaddr], overrides
   )
 
   console.log("PumpStaking deployed to:", PumpStaking.target);
 
   await PumpStaking.waitForDeployment();
+
+  const PumpStakingaddr = await PumpStaking.getAddress()
+
+//   const btcaddr = "0x2CfC917CBE830003F2B0BE802d1226b476e385e7"
+//   const pumpBTCaddr = "0xb45aB56AafB1fFb21eE36C9Dee3B7D8ec5779fC8"
+//   const PumpStakingaddr = "0x1e443Ae0e846F26F53820E44650C554853c0fcC2"
     
   console.log("Verifying contracts on Etherscan...");
   await sleep(10);
 
   try {
     await run("verify:verify", {
-      address: btcbaddr,
+      address: btcaddr,
       constructorArguments: [],
     });
     console.log("Contract verified successfully!");
@@ -73,16 +91,25 @@ async function main() {
   //   2 - PumpStaking setStakeAssetCap
   //   3 - PumpStaking setOperator
 
+  console.log("pumpBTCContract.setMinter")
   const pumpBTCContract = await ethers.getContractAt("MockPumpToken", pumpBTCaddr, deployer);
-  const tx1 = await pumpBTCContract.setMinter(PumpStakingaddr, true);
+
+  const tx1 = await pumpBTCContract.setMinter(PumpStakingaddr, true, overrides);
   await tx1.wait(3)
 
-   const PumpStakingContract = await ethers.getContractAt("PumpStakingTest", PumpStakingaddr, deployer);
-   const tx2 = await PumpStakingContract.setStakeAssetCap(2100000000000000);
-   await tx2.wait(3)
+  console.log("PumpStakingContract.setStakeAssetCap")
+  const PumpStakingContract = await ethers.getContractAt("PumpStakingTest", PumpStakingaddr, deployer);
+  
+  console.log ("totalStakingCap=", await PumpStakingContract.totalStakingCap())
+  const tx2 = await PumpStakingContract.setStakeAssetCap(2100000000000000,overrides);
+  await tx2.wait(3)
+  console.log ("totalStakingCap=",await PumpStakingContract.totalStakingCap())
 
-   const tx3 = await PumpStakingContract.setOperator(deployer.address);
-   await tx3.wait(3)
+  console.log("PumpStakingContract.setOperator")
+  const tx3 = await PumpStakingContract.setOperator(deployer.address,overrides);
+  await tx3.wait(3)
+
+
 
 }  
 

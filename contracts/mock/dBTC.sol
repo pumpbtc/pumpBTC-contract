@@ -4,8 +4,8 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract MockBTCB is ERC20, Ownable {
-    constructor() ERC20("Mock Binance BTC", "mBTCB") Ownable(_msgSender()) {
+contract DevBTC is ERC20, Ownable {
+    constructor() ERC20("Dev BTC", "dBTC") Ownable(_msgSender()) {
         _mint(msg.sender, 21000000 * 10 ** decimals());
     }
 
@@ -17,4 +17,8 @@ contract MockBTCB is ERC20, Ownable {
         _burn(from, amount);
     }
 
+    function decimals() public pure override returns (uint8) {
+        return 8;
+    }
+    
 }

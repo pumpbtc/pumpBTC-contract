@@ -4,8 +4,8 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract MockWBTC is ERC20, Ownable {
-    constructor() ERC20("Mock Wrapped BTC", "mWBTC") Ownable(_msgSender()) {
+contract MockBTC is ERC20, Ownable {
+    constructor() ERC20("Mock BTC", "mBTC") Ownable(_msgSender()) {
         _mint(msg.sender, 21000000 * 10 ** decimals());
     }
 

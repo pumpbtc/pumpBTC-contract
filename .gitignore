@@ -6,6 +6,7 @@ artifacts
 artifacts-zk
 cache
 cache-zk
+deployments-zk
 contracts/artifacts
 coverage.json
 coverage/

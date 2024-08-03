@@ -6,8 +6,9 @@ async function main() {
   console.log("Using deployer account:", deployer.address);
 
   const oftAdapterAddress = "0xD57aAA5C8116cf0F83F7DA5FDCDF90fdde58ea35"; // OFT Adapter contract address
-  const eid = EndpointId.ZKLINK_V2_MAINNET;
-  const peerAddress = "0x8E26CCC5d3DD2ccc348c53b732312a3AC7e0A1EF";
+
+  const eid = EndpointId.ARBITRUM_V2_MAINNET;
+  const peerAddress = "0xF469fBD2abcd6B9de8E169d128226C0Fc90a012e";
 
   const PumpTokenOFTAdapter = await ethers.getContractFactory("PumpTokenOFTAdapter");
   const oftAdapter = PumpTokenOFTAdapter.attach(oftAdapterAddress);

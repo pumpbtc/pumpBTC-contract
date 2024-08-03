@@ -1,4 +1,7 @@
 import { ethers, upgrades } from "hardhat"
+import type {
+  Overrides, // for non payable methods
+} from "ethers";
 
 export async function deployContract(contractName: string, args: any[] = []) {
   const contractFactory = await ethers.getContractFactory(contractName)
@@ -7,9 +10,9 @@ export async function deployContract(contractName: string, args: any[] = []) {
   return contract
 }
 
-export async function deployUpgradeableContract(contractName: string, args: any[] = []) {
+export async function deployUpgradeableContract(contractName: string, args: any[] = [], opt: Overrides) {
   const contractFactory = await ethers.getContractFactory(contractName)
-  const contract = await upgrades.deployProxy(contractFactory, args)
+  const contract = await upgrades.deployProxy(contractFactory, args, {txOverrides:opt} )
   console.log(`\x1b[0m${contractName}(upgradeable) deployed to: \x1b[32m${await contract.getAddress()}`)
   return contract
 }

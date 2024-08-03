@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { upgradeContract } from "./utils"
+import { upgradeContract } from "./deploy/utils"
 
 async function main() {
   await upgradeContract(process.env.ADDRESS_PUMPSTAKING!, "PumpStaking")
