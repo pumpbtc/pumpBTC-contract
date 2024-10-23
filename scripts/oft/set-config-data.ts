@@ -1,4 +1,57 @@
 const CHAIN_CONFIG: any = {
+    BOB: {
+      lzEndpointOnCurrentChain: "0x1a44076050125825900e736c501f859c50fE728c",
+      lzEndpointIdOnCurrentChain: 30279,
+
+      // https://docs.layerzero.network/v2/developers/evm/technical-reference/dvn-addresses#layerzero-labs
+      requiredDVNsOnCurrentChain: [
+        "0x6788f52439aca6bff597d3eec2dc9a44b8fee842", // LayerZero Labs
+      ],
+      optionalDVNsOnCurrentChain: [], // if specifying optional DVN, the setConfig tx will get reverted, why?
+
+      // From the deployed endpoint, take the SendLib302 and ReceiveLib302
+      // https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
+      sendLibAddressOnCurrentChain: "0xC39161c743D0307EB9BCc9FEF03eeb9Dc4802de7",
+      receiveLibAddressOnCurrentChain: "0xe1844c5D63a9543023008D332Bd3d2e6f1FE1043",
+
+      confirmationsOnCurrentChain: 0, // will get default confirmations
+    },
+    ZIRCUIT: {
+      lzEndpointOnCurrentChain: "0x6F475642a6e85809B1c36Fa62763669b1b48DD5B",
+      lzEndpointIdOnCurrentChain: 30303,
+
+      // https://docs.layerzero.network/v2/developers/evm/technical-reference/dvn-addresses#layerzero-labs
+      requiredDVNsOnCurrentChain: [
+        "0x6788f52439aca6bff597d3eec2dc9a44b8fee842", // LayerZero Labs
+      ],
+      optionalDVNsOnCurrentChain: [], // if specifying optional DVN, the setConfig tx will get reverted, why?
+
+      // From the deployed endpoint, take the SendLib302 and ReceiveLib302
+      // https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
+      sendLibAddressOnCurrentChain: "0xC39161c743D0307EB9BCc9FEF03eeb9Dc4802de7",
+      receiveLibAddressOnCurrentChain: "0xe1844c5D63a9543023008D332Bd3d2e6f1FE1043",
+
+      confirmationsOnCurrentChain: 0, // will get default confirmations
+    },
+
+    ZIRCUIT_TEST: {
+      lzEndpointOnCurrentChain: "0x6EDCE65403992e310A62460808c4b910D972f10f",
+      lzEndpointIdOnCurrentChain: 40275,
+
+      // https://docs.layerzero.network/v2/developers/evm/technical-reference/dvn-addresses#layerzero-labs
+      requiredDVNsOnCurrentChain: [
+        "0x88b27057a9e00c5f05dda29241027aff63f9e6e0", // LayerZero Labs
+      ],
+      optionalDVNsOnCurrentChain: [], // if specifying optional DVN, the setConfig tx will get reverted, why?
+
+      // From the deployed endpoint, take the SendLib302 and ReceiveLib302
+      // https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
+      sendLibAddressOnCurrentChain: "0x45841dd1ca50265Da7614fC43A361e526c0e6160",
+      receiveLibAddressOnCurrentChain: "0xd682ECF100f6F4284138AA925348633B0611Ae21",
+
+      confirmationsOnCurrentChain: 0, // will get default confirmations
+    },
+
     SMR: {
       lzEndpointOnCurrentChain: "0x148f693af10ddfaE81cDdb36F4c93B31A90076e1",
       lzEndpointIdOnCurrentChain: 30230,

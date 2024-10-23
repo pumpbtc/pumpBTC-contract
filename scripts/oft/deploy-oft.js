@@ -6,7 +6,10 @@ async function main() {
   console.log("Deploying contracts with the account:", deployer.address);
 
   // https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
-  const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c";
+
+  const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // base
+  // const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // bob
+  // const lzEndpointAddr = "0x6F475642a6e85809B1c36Fa62763669b1b48DD5B"; // zircuit
   const PumpTokenOFT = await ethers.getContractFactory("PumpTokenOFT");
   const pumpTokenOFT = await PumpTokenOFT.deploy(lzEndpointAddr);
 
@@ -20,7 +23,7 @@ async function main() {
 
   const pumpTokenOFTAddr = await pumpTokenOFT.getAddress()
 
-  // const pumpTokenOFTAddr =  "0xF469fBD2abcd6B9de8E169d128226C0Fc90a012e"
+  // const pumpTokenOFTAddr =  "0x1fCca65fb6Ae3b2758b9b2B394CB227eAE404e1E"
 
   try {
     await run("verify:verify", {

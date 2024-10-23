@@ -24,6 +24,12 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY_ADMIN!,
       ]
     },
+    base: {
+      url: process.env.RPC_BASE,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },
     sepolia: {
       url: process.env.RPC_ETH_SEPOLIA,
       accounts: [
@@ -69,16 +75,36 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY_ADMIN!,
       ]
     },
-
-},
+    zircuit: {
+      url: process.env.RPC_ZIRCUIT,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },
+    bob: {
+      url: process.env.RPC_BOB,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },
+    zeta: {
+      url: process.env.RPC_ZETA,
+      accounts: [ 
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },    
+  },
   etherscan: {
     apiKey: {
       mainnet: process.env.API_ETHERSCAN_ETH!,
       sepolia: process.env.API_ETHERSCAN_ETH!,
       bsc: process.env.API_ETHERSCAN_BSC!,
       arbitrum: process.env.API_ETHERSCAN_ARB!,
+      base: process.env.API_ETHERSCAN_BASE!,
+      bob: "bob",
       mantle: "mantle", // apiKey is not required, just set a placeholder
       bera_testnet: "bera_testnet", // apiKey is not required, just set a placeholder
+      zircuit: process.env.API_ETHERSCAN_ZIRCUIT!,
     },
     customChains: [
       {
@@ -96,7 +122,23 @@ const config: HardhatUserConfig = {
           apiURL: "https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
           browserURL: "https://bartio.beratrail.io"
         }
-      }
+      },
+      {
+        network: 'zircuit',
+        chainId: 48900,
+        urls: {
+          apiURL: 'https://explorer.zircuit.com/api/contractVerifyHardhat',
+          browserURL: 'https://explorer.zircuit.com',
+        },
+      }, 
+      {
+        network: 'bob',
+        chainId: 60808,
+        urls: {
+          apiURL: 'https://explorer.gobob.xyz/api',
+          browserURL: 'https://explorer.gobob.xyz/',
+        },
+      },      
     ]    
   }
 };
@@ -104,6 +146,6 @@ const config: HardhatUserConfig = {
 export default config;
 
 
-const { ProxyAgent, setGlobalDispatcher } = require("undici");
-const proxyAgent = new ProxyAgent("http://127.0.0.1:7890");
-setGlobalDispatcher(proxyAgent);
+// const { ProxyAgent, setGlobalDispatcher } = require("undici");
+// const proxyAgent = new ProxyAgent("http://127.0.0.1:7890");
+// setGlobalDispatcher(proxyAgent);

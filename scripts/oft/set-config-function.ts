@@ -92,6 +92,7 @@ async function setConfig(
     config: ulnConfigEncoded,
   };
   ////////
+  console.log("0")
 
   ///////////////
   const lzEndpointContract = await ethers.getContractAt(
@@ -99,13 +100,18 @@ async function setConfig(
     lzEndpointOnCurrentChain,
   );
 
+  console.log("1")
+
   const messageLibAddresses = [sendLibAddressOnCurrentChain, receiveLibAddressOnCurrentChain];
   for (const libAddress of messageLibAddresses) {
+    console.log("2")
     try {
       const tx = await lzEndpointContract.setConfig(OAppContractAddressOnCurrentChain, libAddress, [
         setConfigParamUln,
       ]);
+      console.log("3")
       const txReceipt = await tx.wait();
+      console.log("4")
       console.log(`setConfig for ${libAddress} - tx: ${txReceipt?.hash}`);
     } catch (err) {
       console.error(err);
