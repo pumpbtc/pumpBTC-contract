@@ -7,9 +7,11 @@ async function main() {
 
   // https://docs.layerzero.network/v2/developers/evm/technical-reference/deployed-contracts
 
-  const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // base
+  // const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // base
   // const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // bob
   // const lzEndpointAddr = "0x6F475642a6e85809B1c36Fa62763669b1b48DD5B"; // zircuit
+  const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // eth
+  
   const PumpTokenOFT = await ethers.getContractFactory("PumpTokenOFT");
   const pumpTokenOFT = await PumpTokenOFT.deploy(lzEndpointAddr);
 

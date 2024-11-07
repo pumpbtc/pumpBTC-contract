@@ -93,6 +93,13 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY_ADMIN!,
       ]
     },    
+    core: {
+      url: process.env.RPC_CORE,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ],
+      chainId: 1116
+    },
   },
   etherscan: {
     apiKey: {
@@ -100,11 +107,13 @@ const config: HardhatUserConfig = {
       sepolia: process.env.API_ETHERSCAN_ETH!,
       bsc: process.env.API_ETHERSCAN_BSC!,
       arbitrum: process.env.API_ETHERSCAN_ARB!,
+      arbitrumOne: process.env.API_ETHERSCAN_ARB!,
       base: process.env.API_ETHERSCAN_BASE!,
       bob: "bob",
       mantle: "mantle", // apiKey is not required, just set a placeholder
       bera_testnet: "bera_testnet", // apiKey is not required, just set a placeholder
       zircuit: process.env.API_ETHERSCAN_ZIRCUIT!,
+      core: process.env.API_ETHERSCAN_CORE!
     },
     customChains: [
       {
@@ -139,6 +148,14 @@ const config: HardhatUserConfig = {
           browserURL: 'https://explorer.gobob.xyz/',
         },
       },      
+      {
+        network: "core",
+        chainId: 1116,
+        urls: {
+          apiURL: "https://openapi.coredao.org/api",
+          browserURL: "https://scan.coredao.org/"
+        }
+      }      
     ]    
   }
 };
