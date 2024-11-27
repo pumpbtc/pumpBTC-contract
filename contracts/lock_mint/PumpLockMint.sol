@@ -27,12 +27,23 @@ contract PumpLockMint is Ownable2Step, ReentrancyGuard, Pausable {
     PumpTokenOFT public immutable mintAsset;
 
     address public admin;
+    address public approver;
+
+    bool public burnUnlockEnabled = true;
+    bool public approvalRequired = false;
+
+    mapping(address => uint256) public pendingBurnUnlocks;
 
     //============================== EVENTS ===============================
 
     event AdminSet(address indexed admin);
+    event ApproverSet(address indexed approver);
+    event ApprovalRequiredSet(bool required);
+
     event Locked(address indexed user, uint256 amount);
     event Unlocked(address indexed user, uint256 amount);
+    event BurnUnlockRequested(address indexed user, uint256 amount);
+
     event EmergencyWithdraw(address indexed owner, uint256 amount);
 
     //============================== CONSTRUCTOR ===============================
@@ -52,7 +63,12 @@ contract PumpLockMint is Ownable2Step, ReentrancyGuard, Pausable {
         _;
     }
 
-    //============================== SET ADMIN ===============================
+    modifier onlyApprover() {
+        require(msg.sender == approver, "Only approver can call this function");
+        _;
+    }
+
+    //============================== MANAGE FUNCTIONS ===============================
 
     /**
      * @notice Sets the admin address. Can only be called by the contract owner.
@@ -65,7 +81,36 @@ contract PumpLockMint is Ownable2Step, ReentrancyGuard, Pausable {
         emit AdminSet(_admin);
     }
 
-    //============================== PAUSE ===============================
+    /**
+     * @notice Sets the approver address. Can only be called by the contract owner.
+     * @param _approver The address to be set as the new approver.
+     */
+    function setApprover(address _approver) external onlyOwner {
+        require(_approver != address(0), "Invalid approver address");
+        approver = _approver;
+
+        emit ApproverSet(_approver);
+    }
+
+    /**
+     * @notice Sets whether approval is required for burnUnlock. Can only be called by the contract owner.
+     * @param _required True if approval is required, false otherwise.
+     */
+    function setApprovalRequired(bool _required) external onlyOwner {
+        approvalRequired = _required;
+
+        emit ApprovalRequiredSet(_required);
+    }
+
+    /**
+     * @notice Sets whether burnUnlock is enabled. Can only be called by the contract owner.
+     * @param _enabled True to enable burnUnlock, false to disable.
+     */
+    function setBurnUnlockEnabled(bool _enabled) external onlyOwner {
+        burnUnlockEnabled = _enabled;
+    }
+
+    //============================== GLOBAL FUNCTIONS ===============================
 
     /**
      * @notice Only admin can Pauses all contract functions.
@@ -74,8 +119,6 @@ contract PumpLockMint is Ownable2Step, ReentrancyGuard, Pausable {
         _pause();
     }
 
-    //============================== UNPAUSE ===============================
-
     /**
      * @notice Only admin can Unpauses all contract functions.
      */
@@ -83,7 +126,7 @@ contract PumpLockMint is Ownable2Step, ReentrancyGuard, Pausable {
         _unpause();
     }
 
-    //============================== LOCK MINT ===============================
+    //============================== EXTERNAL FUNCTIONS ===============================
 
     /**
      * @notice Locks `amount` of lockAsset and mints the same amount of mintAsset to the caller.
@@ -98,22 +141,51 @@ contract PumpLockMint is Ownable2Step, ReentrancyGuard, Pausable {
         emit Locked(msg.sender, amount);
     }
 
-    //============================== BURN UNLOCK ===============================
-
     /**
      * @notice Burns `amount` of mintAsset from the caller and unlocks the same amount of lockAsset to the caller.
+     * If approval is required, the request is stored and must be approved by the approver.
      * @param amount The amount of tokens to burn and unlock.
      */
     function burnUnlock(uint256 amount) external nonReentrant whenNotPaused {
+        require(burnUnlockEnabled, "BurnUnlock is currently disabled");
         require(amount > 0, "LockMint: Amount must be greater than zero");
-        mintAsset.burn(msg.sender, amount);
+        require(pendingBurnUnlocks[msg.sender] == 0, "Existing pending burnUnlock request");
 
-        lockAsset.safeTransfer(msg.sender, amount);
-
-        emit Unlocked(msg.sender, amount);
+        if (approvalRequired) {
+            pendingBurnUnlocks[msg.sender] = amount;
+            emit BurnUnlockRequested(msg.sender, amount);
+        } else {
+            _processBurnUnlock(msg.sender, amount);
+        }
     }
 
-    //============================== EMERGENCY WITHDRAW ===============================
+    /**
+     * @notice Approves a pending burnUnlock request for a user. Can only be called by the approver.
+     * @param user The address of the user whose request is being approved.
+     */
+    function approveBurnUnlock(address user) external onlyApprover nonReentrant whenNotPaused {
+        uint256 amount = pendingBurnUnlocks[user];
+        require(amount > 0, "No pending burnUnlock request for this user");
+
+        pendingBurnUnlocks[user] = 0;
+
+        _processBurnUnlock(user, amount);
+    }
+
+    /**
+     * @notice Approves pending burnUnlock requests for multiple users. Can only be called by the approver.
+     * @param users The addresses of the users whose requests are being approved.
+     */
+    function approverBatchBurnUnlock(address[] calldata users) external onlyApprover nonReentrant whenNotPaused {
+        for (uint256 i = 0; i < users.length; i++) {
+            address user = users[i];
+            uint256 amount = pendingBurnUnlocks[user];
+            if (amount > 0) {
+                pendingBurnUnlocks[user] = 0;
+                _processBurnUnlock(user, amount);
+            }
+        }
+    }
 
     /**
      * @notice Allows the owner to withdraw `amount` of lockAsset in case of an emergency.
@@ -125,5 +197,18 @@ contract PumpLockMint is Ownable2Step, ReentrancyGuard, Pausable {
         lockAsset.safeTransfer(owner(), amount);
 
         emit EmergencyWithdraw(msg.sender,amount);
+    }
+
+    //============================== INTERNAL FUNCTIONS ===============================
+
+    /**
+     * @dev Internal function to process burnUnlock.
+     * @param user The address of the user.
+     * @param amount The amount to burn and unlock.
+     */
+    function _processBurnUnlock(address user, uint256 amount) internal {
+        mintAsset.burn(user, amount);
+        lockAsset.safeTransfer(user, amount);
+        emit Unlocked(user, amount);
     }
 }

@@ -9,15 +9,15 @@ async function main() {
   const mintAssetAddress = "0xADc9c900b05F39f48bB6F402A1BAE60929F4f9A8"; // PumpBTC.bera address
 
   // deploy lockMint contract
-  const LockMint = await ethers.getContractFactory("PumpLockMint");
-  const lockMint = await LockMint.deploy(lockAssetAddress, mintAssetAddress);
+  // const LockMint = await ethers.getContractFactory("PumpLockMint");
+  // const lockMint = await LockMint.deploy(lockAssetAddress, mintAssetAddress);
 
-  console.log("LockMint deployed to:", lockMint.target);
+  // console.log("LockMint deployed to:", lockMint.target);
 
-  await lockMint.waitForDeployment();
-  const lockMintAddr = lockMint.target
+  // await lockMint.waitForDeployment();
+  // const lockMintAddr = lockMint.target
 
-  // const lockMintAddr = "0xc3c02d146bBE9B4B51243AC626862b7FBb5B23E4"
+  const lockMintAddr = "0xeB863b2dc8acA4e3C053009d6770e76BD16A55a9"
 
   try {
     await run("verify:verify", {
@@ -30,18 +30,22 @@ async function main() {
   }
 
 
-  const contractOwner = "0x77A0545Dc1Dc6bAee8d9c1d436c6688a75Ae5777";
+  // const contractOwner = "0x77A0545Dc1Dc6bAee8d9c1d436c6688a75Ae5777";
 
-  const pumpLockMint = await ethers.getContractAt("PumpLockMint", lockMintAddr, deployer);
+  // const pumpLockMint = await ethers.getContractAt("PumpLockMint", lockMintAddr, deployer);
 
-  console.log("PumpLockMint.setAdmin")
-  const tx1 = await pumpLockMint.setAdmin(contractOwner);
-  await tx1.wait(3)
+  // console.log("PumpLockMint.setAdmin")
+  // const tx1 = await pumpLockMint.setAdmin(contractOwner);
+  // await tx1.wait(3)
 
-  console.log("PumpLockMint.transferOwnership")
-  const tx2 = await pumpLockMint.transferOwnership(contractOwner);
-  await tx2.wait(3)
-  0xc3c02d146bBE9B4B51243AC626862b7FBb5B23E4
+  // console.log("PumpLockMint.setApprover")
+  // const tx2 = await pumpLockMint.setApprover(contractOwner);
+  // await tx2.wait(3)
+
+  // console.log("PumpLockMint.transferOwnership")
+  // const tx3 = await pumpLockMint.transferOwnership(contractOwner);
+  // await tx3.wait(3)
+  // // 0xc3c02d146bBE9B4B51243AC626862b7FBb5B23E4
 
 }  
 

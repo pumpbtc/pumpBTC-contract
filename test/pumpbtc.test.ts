@@ -12,7 +12,7 @@ describe("pumpBTC Unit Test", function () {
     const [_owner, operator, user1, user2] = await ethers.getSigners();
 
     // Mock BTC tokens
-    const wbtc = await ethers.deployContract("MockWBTC");
+    const wbtc = await ethers.deployContract("MockBTC");
     const amount8 = parseUnits("100", 8);
     const amount18 = parseUnits("100", 18);
 

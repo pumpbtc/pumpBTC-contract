@@ -100,6 +100,12 @@ const config: HardhatUserConfig = {
       ],
       chainId: 1116
     },
+    avalance:{
+      url: process.env.RPC_AVALANCE,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    }    
   },
   etherscan: {
     apiKey: {
@@ -113,7 +119,9 @@ const config: HardhatUserConfig = {
       mantle: "mantle", // apiKey is not required, just set a placeholder
       bera_testnet: "bera_testnet", // apiKey is not required, just set a placeholder
       zircuit: process.env.API_ETHERSCAN_ZIRCUIT!,
-      core: process.env.API_ETHERSCAN_CORE!
+      core: process.env.API_ETHERSCAN_CORE!,
+      avalance: "avalance"
+
     },
     customChains: [
       {
@@ -155,7 +163,15 @@ const config: HardhatUserConfig = {
           apiURL: "https://openapi.coredao.org/api",
           browserURL: "https://scan.coredao.org/"
         }
-      }      
+      },
+      {
+        network: 'avalance',
+        chainId: 43114,
+        urls: {
+          apiURL: 'https://api.snowtrace.io/api',
+          browserURL: 'https://snowtrace.io/',
+        },
+      }
     ]    
   }
 };
