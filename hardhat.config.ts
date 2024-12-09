@@ -105,7 +105,13 @@ const config: HardhatUserConfig = {
       accounts: [
         process.env.PRIVATE_KEY_ADMIN!,
       ]
-    }    
+    },
+    bera_cartio: {
+      url: process.env.RPC_BERA_CARTIO,
+      accounts: [
+        process.env.PRIVATE_KEY_ADMIN!,
+      ]
+    },
   },
   etherscan: {
     apiKey: {
@@ -120,8 +126,8 @@ const config: HardhatUserConfig = {
       bera_testnet: "bera_testnet", // apiKey is not required, just set a placeholder
       zircuit: process.env.API_ETHERSCAN_ZIRCUIT!,
       core: process.env.API_ETHERSCAN_CORE!,
-      avalance: "avalance"
-
+      avalance: "avalance",
+      bera_cartio: "bera_cartio", // apiKey is not required, just set a placeholder
     },
     customChains: [
       {
@@ -171,6 +177,14 @@ const config: HardhatUserConfig = {
           apiURL: 'https://api.snowtrace.io/api',
           browserURL: 'https://snowtrace.io/',
         },
+      },
+      {
+        network: "bera_cartio",
+        chainId: 80000,
+        urls: {
+          apiURL: "https://api.routescan.io/v2/network/testnet/evm/80000/etherscan",
+          browserURL: "https://80000.testnet.localhost:8080"
+        }
       }
     ]    
   }

@@ -10,7 +10,8 @@ async function main() {
   // const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // base
   // const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // bob
   // const lzEndpointAddr = "0x6F475642a6e85809B1c36Fa62763669b1b48DD5B"; // zircuit
-  const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // eth
+  // const lzEndpointAddr = "0x1a44076050125825900e736c501f859c50fE728c"; // eth
+  const lzEndpointAddr = "0x6C7Ab2202C98C4227C5c46f1417D81144DA716Ff";  // berachain cartio
   
   const PumpTokenOFT = await ethers.getContractFactory("PumpTokenOFT");
   const pumpTokenOFT = await PumpTokenOFT.deploy(lzEndpointAddr);
